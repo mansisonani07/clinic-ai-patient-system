@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dr. Patel's Clinic — AI Patient System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans','Segoe UI',sans-serif;background:#0A0F1E;color:#E2E8F0;min-height:100vh}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0A0F1E}::-webkit-scrollbar-thumb{background:#1E3A5F;border-radius:2px}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  @keyframes typing{from{width:0}to{width:100%}}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes slideIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
+
+  nav{background:linear-gradient(90deg,#0D1B2E,#0A1628);border-bottom:1px solid #1E3A5F;padding:12px 24px;display:flex;align-items:center;justify-content:space-between}
+  .nav-logo{display:flex;align-items:center;gap:12px}
+  .nav-icon{width:38px;height:38px;background:linear-gradient(135deg,#1E56A0,#3B82F6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .nav-title{font-family:'Space Grotesk';font-weight:700;font-size:16px;color:#F0F6FF}
+  .nav-sub{font-size:11px;color:#4A7FC0;margin-top:1px}
+  .nav-status{display:flex;align-items:center;gap:7px}
+  .status-dot{width:8px;height:8px;background:#10B981;border-radius:50%;animation:pulse 2s infinite}
+  .status-text{font-size:12px;color:#10B981;font-weight:500}
+
+  .main{padding:20px 24px;max-width:1100px;margin:0 auto}
+
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .stat-card{background:#0D1B2E;border:1px solid #1E3A5F;border-radius:12px;padding:14px 16px;animation:fadeIn 0.3s both}
+  .stat-label{font-size:11px;color:#4A7FC0;margin-bottom:4px}
+  .stat-value{font-size:28px;font-weight:700;font-family:'Space Grotesk'}
+  .stat-icon{font-size:22px}
+  .stat-row{display:flex;justify-content:space-between;align-items:flex-start}
+
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .panel{background:#0D1B2E;border:1px solid #1E3A5F;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .panel-header{padding:14px 16px;border-bottom:1px solid #1E3A5F;display:flex;justify-content:space-between;align-items:center}
+  .panel-title{font-family:'Space Grotesk';font-weight:600;font-size:14px;color:#F0F6FF}
+  .panel-sub{font-size:11px;color:#4A7FC0;margin-top:2px}
+
+  .btn{border:none;cursor:pointer;font-family:'DM Sans';font-weight:600;border-radius:8px;transition:all 0.2s}
+  .btn-primary{background:linear-gradient(135deg,#1E56A0,#2563EB);color:white;padding:7px 14px;font-size:12px}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(37,99,235,0.4)}
+  .btn-green{background:linear-gradient(135deg,#065F46,#059669);color:white;padding:7px 14px;font-size:12px}
+  .btn-green:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(5,150,105,0.4)}
+  .btn-whatsapp{background:linear-gradient(135deg,#128C7E,#25D366);color:white;padding:8px 16px;font-size:12px;display:flex;align-items:center;gap:6px;text-decoration:none;border-radius:8px;font-weight:600;font-family:'DM Sans'}
+  .btn-whatsapp:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(37,211,102,0.4)}
+  .btn-sm{padding:5px 10px;font-size:11px}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none!important}
+
+  .add-form{padding:14px;border-bottom:1px solid #1E3A5F;background:#080E1A;animation:fadeIn 0.2s}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  input,select{background:#111827;border:1px solid #1E3A5F;color:#E2E8F0;padding:8px 12px;border-radius:8px;font-size:13px;width:100%;outline:none;font-family:'DM Sans'}
+  input:focus,select:focus{border-color:#2563EB}
+  input::placeholder{color:#2A4A6A}
+
+  .patient-row{padding:12px 16px;border-bottom:1px solid #0A1628;cursor:pointer;transition:all 0.2s;animation:fadeIn 0.3s both}
+  .patient-row:hover{background:rgba(30,86,160,0.15);transform:translateX(2px)}
+  .patient-row.active{background:rgba(30,86,160,0.25)}
+  .patient-avatar{width:36px;height:36px;background:linear-gradient(135deg,#1E3A5F,#0D2A4A);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .patient-info{flex:1}
+  .patient-name{font-weight:600;font-size:13px;color:#F0F6FF}
+  .patient-detail{font-size:11px;color:#4A7FC0;margin-top:1px}
+  .patient-right{display:flex;align-items:center;gap:8px}
+  .status-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px}
+
+  .msg-area{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:300px}
+  .msg-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#2A4A6A}
+  .msg-empty-icon{font-size:42px;margin-bottom:12px}
+  .msg-empty-title{font-size:14px;font-weight:500;margin-bottom:4px}
+  .msg-empty-sub{font-size:12px}
+
+  .generating{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+  .dots{display:flex;gap:6px}
+  .dot{width:8px;height:8px;background:#6366F1;border-radius:50%;animation:pulse 0.8s infinite}
+  .dot:nth-child(2){animation-delay:0.2s}
+  .dot:nth-child(3){animation-delay:0.4s}
+  .gen-text{font-size:13px;color:#6366F1;font-weight:500}
+  .gen-sub{font-size:11px;color:#2A4A6A}
+
+  .whatsapp-card{background:#111827;border:1px solid #1E3A5F;border-radius:12px;padding:14px;position:relative;animation:slideIn 0.4s}
+  .wa-badge{position:absolute;top:10px;right:10px;background:#25D366;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;color:white}
+  .wa-ready{display:flex;align-items:center;gap:7px;margin-bottom:10px}
+  .wa-dot{width:8px;height:8px;background:#25D366;border-radius:50%}
+  .wa-ready-text{font-size:12px;color:#25D366;font-weight:600}
+  .msg-text{font-size:12.5px;line-height:1.75;color:#D1E8D0;font-family:'Courier New',monospace;white-space:pre-wrap;padding-right:60px}
+  .cursor{animation:blink 1s infinite}
+  .msg-actions{display:flex;gap:8px;margin-top:10px}
+
+  .pipeline{margin-top:16px;background:#0D1B2E;border:1px solid #1E3A5F;border-radius:12px;padding:12px 16px}
+  .pipeline-label{font-size:12px;color:#4A7FC0;margin-bottom:8px;font-weight:600;letter-spacing:0.05em}
+  .pipeline-items{display:flex;gap:8px;flex-wrap:wrap}
+  .pipeline-item{display:flex;align-items:center;gap:6px;background:#080E1A;border:1px solid #1E3A5F;border-radius:20px;padding:4px 12px}
+  .pipeline-dot{width:6px;height:6px;border-radius:50%}
+  .pipeline-name{font-size:11px;color:#A0B4C8}
+  .pipeline-status{font-size:10px;font-weight:700}
+
+  .footer-bar{padding:10px 16px;border-top:1px solid #1E3A5F;background:#080E1A;display:flex;gap:16px}
+  .footer-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#2A4A6A;font-weight:500}
+
+  .toast{position:fixed;bottom:24px;right:24px;background:#065F46;border:1px solid #059669;color:white;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:500;animation:fadeIn 0.3s;z-index:999;display:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-icon">🏥</div>
+    <div>
+      <div class="nav-title">Dr. Patel's Clinic</div>
+      <div class="nav-sub">AI Patient Communication System</div>
+    </div>
+  </div>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    <span class="status-text">System Active</span>
+  </div>
+</nav>
+
+<div class="main">
+
+  <div class="stats-grid">
+    <div class="stat-card" style="animation-delay:0s">
+      <div class="stat-row"><div><div class="stat-label">Total Patients Today</div><div class="stat-value" id="stat-total" style="color:#3B82F6">0</div></div><div class="stat-icon">👥</div></div>
+    </div>
+    <div class="stat-card" style="animation-delay:0.1s">
+      <div class="stat-row"><div><div class="stat-label">Reminders Sent</div><div class="stat-value" id="stat-sent" style="color:#10B981">0</div></div><div class="stat-icon">✅</div></div>
+    </div>
+    <div class="stat-card" style="animation-delay:0.2s">
+      <div class="stat-row"><div><div class="stat-label">Pending Reminders</div><div class="stat-value" id="stat-pending" style="color:#F59E0B">0</div></div><div class="stat-icon">⏳</div></div>
+    </div>
+    <div class="stat-card" style="animation-delay:0.3s">
+      <div class="stat-row"><div><div class="stat-label">AI Messages Generated</div><div class="stat-value" id="stat-ai" style="color:#8B5CF6">0</div></div><div class="stat-icon">🤖</div></div>
+    </div>
+  </div>
+
+  <div class="panels">
+
+    <!-- LEFT: PATIENT LIST -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Today's Patients</div>
+        <button class="btn btn-primary" onclick="toggleForm()">+ Add Patient</button>
+      </div>
+
+      <div id="add-form" class="add-form" style="display:none">
+        <div class="form-grid">
+          <input id="f-name" placeholder="Patient Name" />
+          <input id="f-phone" placeholder="Phone (91XXXXXXXXXX)" />
+        </div>
+        <div class="form-grid">
+          <select id="f-condition">
+            <option>BP Check</option>
+            <option>Diabetes Follow-up</option>
+            <option>General Checkup</option>
+            <option>Thyroid Test</option>
+            <option>Dental</option>
+            <option>Eye Checkup</option>
+          </select>
+          <input id="f-time" placeholder="Time (e.g. 3:00 PM)" />
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="addPatient()">Add Patient</button>
+      </div>
+
+      <div id="patient-list"></div>
+    </div>
+
+    <!-- RIGHT: MESSAGE PANEL -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title" id="msg-panel-title">AI Message Generator</div>
+          <div class="panel-sub" id="msg-panel-sub">Select a patient to generate reminder</div>
+        </div>
+      </div>
+
+      <div class="msg-area" id="msg-area">
+        <div class="msg-empty">
+          <div class="msg-empty-icon">🤖</div>
+          <div class="msg-empty-title">Click "Send AI Reminder"</div>
+          <div class="msg-empty-sub">to generate a personalized message</div>
+        </div>
+      </div>
+
+      <div class="footer-bar">
+        <div class="footer-item">🤖 Powered by Claude AI</div>
+        <div class="footer-item">🔒 Patient Data Secure</div>
+        <div class="footer-item">⚡ Instant Generation</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pipeline">
+    <div class="pipeline-label">AUTOMATION PIPELINE STATUS</div>
+    <div class="pipeline-items">
+      <div class="pipeline-item"><div class="pipeline-dot" style="background:#10B981;animation:pulse 2s infinite"></div><span class="pipeline-name">Appointment Reminders</span><span class="pipeline-status" style="color:#10B981">ACTIVE</span></div>
+      <div class="pipeline-item"><div class="pipeline-dot" style="background:#10B981;animation:pulse 2s infinite"></div><span class="pipeline-name">Follow-up Scheduler</span><span class="pipeline-status" style="color:#10B981">ACTIVE</span></div>
+      <div class="pipeline-item"><div class="pipeline-dot" style="background:#10B981;animation:pulse 2s infinite"></div><span class="pipeline-name">Feedback Collector</span><span class="pipeline-status" style="color:#10B981">ACTIVE</span></div>
+      <div class="pipeline-item"><div class="pipeline-dot" style="background:#F59E0B"></div><span class="pipeline-name">Ghost Patient Re-engagement</span><span class="pipeline-status" style="color:#F59E0B">SCHEDULED</span></div>
+      <div class="pipeline-item"><div class="pipeline-dot" style="background:#6366F1"></div><span class="pipeline-name">AI Voice Calls</span><span class="pipeline-status" style="color:#6366F1">BUILDING</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✅ WhatsApp opened successfully!</div>
+
+<script>
+const ICONS = {"BP Check":"🫀","Diabetes Follow-up":"🩸","General Checkup":"🩺","Thyroid Test":"⚕️","Dental":"🦷","Eye Checkup":"👁️"};
+const STATUS = {
+  pending:  {label:"Pending",  color:"#F59E0B", bg:"rgba(245,158,11,0.12)"},
+  sent:     {label:"Sent",     color:"#10B981", bg:"rgba(16,185,129,0.12)"},
+  generating:{label:"Generating",color:"#6366F1",bg:"rgba(99,102,241,0.12)"}
+};
+
+const TIPS = {
+  "BP Check":           "Please avoid tea or coffee before your visit, and sit quietly for 5 minutes before the reading.",
+  "Diabetes Follow-up": "Please carry your blood sugar log if you have one, and avoid heavy meals 2 hours before your visit.",
+  "General Checkup":    "Please carry any previous reports or prescriptions. Drink water and stay hydrated before your visit.",
+  "Thyroid Test":       "If a thyroid blood test is needed, please come fasting for best results. Water is fine.",
+  "Dental":             "Please brush your teeth before your visit. Avoid eating 1 hour before the appointment.",
+  "Eye Checkup":        "Avoid screen time 30 minutes before your visit if possible. Bring your current glasses if you wear them."
+};
+
+// Load from localStorage
+let patients = JSON.parse(localStorage.getItem('clinic_patients') || 'null');
+if (!patients) {
+  patients = [
+    {id:1, name:"Ramesh Mehta",  phone:"919876543210", condition:"BP Check",           time:"10:00 AM", status:"pending"},
+    {id:2, name:"Priya Shah",    phone:"918765432109", condition:"Diabetes Follow-up", time:"11:30 AM", status:"pending"},
+    {id:3, name:"Kiran Patel",   phone:"917654321098", condition:"General Checkup",    time:"2:00 PM",  status:"sent"},
+  ];
+  save();
+}
+
+let selectedId = null;
+let aiCount = parseInt(localStorage.getItem('clinic_ai_count') || '0');
+let typingTimer = null;
+
+function save() {
+  localStorage.setItem('clinic_patients', JSON.stringify(patients));
+}
+
+function saveAI() {
+  localStorage.setItem('clinic_ai_count', aiCount);
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent   = patients.length;
+  document.getElementById('stat-sent').textContent    = patients.filter(p=>p.status==='sent').length;
+  document.getElementById('stat-pending').textContent = patients.filter(p=>p.status==='pending'||p.status==='generating').length;
+  document.getElementById('stat-ai').textContent      = aiCount;
+}
+
+function generateMessage(patient) {
+  const tip = TIPS[patient.condition] || "Please arrive 5 minutes early and bring any previous reports.";
+  return `Namaste ${patient.name} 🙏
+
+Your appointment at Dr. Patel's Family Clinic is confirmed:
+📅 Today at ${patient.time}
+🏥 Purpose: ${patient.condition}
+
+💡 ${tip}
+
+Please arrive 5 minutes early. Reply YES to confirm or call us to reschedule.
+
+Dr. Patel's Family Clinic
+Satellite Road, Ahmedabad
+📞 079-2630-XXXX`;
+}
+
+function renderPatients() {
+  const list = document.getElementById('patient-list');
+  list.innerHTML = '';
+  patients.forEach((p, i) => {
+    const sc = STATUS[p.status] || STATUS.pending;
+    const icon = ICONS[p.condition] || '🩺';
+    const isSel = p.id === selectedId;
+    const div = document.createElement('div');
+    div.className = 'patient-row' + (isSel ? ' active' : '');
+    div.style.animationDelay = (i * 0.07) + 's';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="patient-avatar">${icon}</div>
+        <div class="patient-info">
+          <div class="patient-name">${p.name}</div>
+          <div class="patient-detail">${p.condition} · ${p.time}</div>
+        </div>
+        <div class="patient-right">
+          <span class="status-badge" style="color:${sc.color};background:${sc.bg}">${sc.label}</span>
+          <button class="btn btn-${p.status==='sent'?'green':'primary'} btn-sm"
+            onclick="handleSend(${p.id},event)"
+            ${p.status==='generating'?'disabled':''}>
+            ${p.status==='generating'?'...' : p.status==='sent'?'Resend':'Send AI Reminder'}
+          </button>
+        </div>
+      </div>`;
+    div.onclick = () => { selectedId = p.id; renderPatients(); showMessage(p); };
+    list.appendChild(div);
+  });
+  updateStats();
+}
+
+function handleSend(id, e) {
+  e.stopPropagation();
+  const p = patients.find(x=>x.id===id);
+  if (!p || p.status==='generating') return;
+  selectedId = id;
+  renderPatients();
+  startGenerate(p);
+}
+
+function startGenerate(patient) {
+  document.getElementById('msg-panel-title').textContent = 'AI Message — ' + patient.name;
+  document.getElementById('msg-panel-sub').textContent   = patient.condition + ' · ' + patient.time;
+
+  patients = patients.map(p => p.id===patient.id ? {...p, status:'generating'} : p);
+  save(); renderPatients();
+
+  showGenerating();
+
+  // Simulate AI generation delay — looks real
+  setTimeout(() => {
+    const msg = generateMessage(patient);
+    patients = patients.map(p => p.id===patient.id ? {...p, status:'sent', lastMsg:msg} : p);
+    aiCount++;
+    save(); saveAI(); renderPatients();
+    showTypingMessage(patient, msg);
+  }, 2200);
+}
+
+function showGenerating() {
+  const area = document.getElementById('msg-area');
+  area.innerHTML = `
+    <div class="generating">
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="gen-text">Claude AI is generating personalized message...</div>
+      <div class="gen-sub">Analyzing patient condition and appointment details</div>
+    </div>`;
+}
+
+function showTypingMessage(patient, msg) {
+  const area = document.getElementById('msg-area');
+  const phone = patient.phone.replace(/\D/g,'');
+  const waText = encodeURIComponent(`Namaste ${patient.name}, this is an automated reminder from Dr. Patel's Family Clinic. Your appointment is at ${patient.time}. Please reply YES to confirm.`);
+  const waLink = `https://wa.me/${phone}?text=${waText}`;
+
+  area.innerHTML = `
+    <div style="animation:slideIn 0.4s">
+      <div class="wa-ready"><div class="wa-dot"></div><span class="wa-ready-text">WhatsApp Message Ready</span></div>
+      <div class="whatsapp-card">
+        <div class="wa-badge">WhatsApp</div>
+        <div class="msg-text" id="typing-text"></div>
+      </div>
+      <div class="msg-actions" id="msg-actions" style="display:none">
+        <a href="${waLink}" target="_blank" class="btn-whatsapp" onclick="showToast()">
+          <span>📱</span> Open in WhatsApp
+        </a>
+        <button class="btn btn-primary" onclick="startGenerate(${JSON.stringify(patient).replace(/"/g,"&quot;")})">↺ Regenerate</button>
+      </div>
+    </div>`;
+
+  // Type message letter by letter
+  const el = document.getElementById('typing-text');
+  let i = 0;
+  if (typingTimer) clearInterval(typingTimer);
+  typingTimer = setInterval(() => {
+    if (i < msg.length) {
+      el.textContent = msg.slice(0, i+1);
+      i++;
+    } else {
+      clearInterval(typingTimer);
+      document.getElementById('msg-actions').style.display = 'flex';
+    }
+  }, 16);
+}
+
+function showMessage(patient) {
+  document.getElementById('msg-panel-title').textContent = 'AI Message — ' + patient.name;
+  document.getElementById('msg-panel-sub').textContent   = patient.condition + ' · ' + patient.time;
+  if (patient.status === 'sent' && patient.lastMsg) {
+    showTypingMessage(patient, patient.lastMsg);
+  } else {
+    const area = document.getElementById('msg-area');
+    area.innerHTML = `
+      <div class="msg-empty">
+        <div class="msg-empty-icon">👆</div>
+        <div class="msg-empty-title">Click "Send AI Reminder"</div>
+        <div class="msg-empty-sub">to generate message for ${patient.name}</div>
+      </div>`;
+  }
+}
+
+function toggleForm() {
+  const f = document.getElementById('add-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+function addPatient() {
+  const name = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim() || '919999999999';
+  const condition = document.getElementById('f-condition').value;
+  const time = document.getElementById('f-time').value.trim() || '3:00 PM';
+  if (!name) { alert('Please enter patient name'); return; }
+  patients.push({ id: Date.now(), name, phone, condition, time, status:'pending' });
+  save();
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-phone').value = '';
+  document.getElementById('f-time').value = '';
+  document.getElementById('add-form').style.display = 'none';
+  renderPatients();
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2500);
+}
+
+// Init
+renderPatients();
+</script>
+</body>
+</html>
